@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "microlane"
+dynamic = ["version"]
+dependencies = []
+requires-python = ">=3.9"
+authors = [
+    {name = "htamas", email = "microlane@htamas.net"}
+]
+description = "Self-contained RTL to GDS flow for simple chip designs"
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+keywords = [
+    "chip design", "EDA", "CAD", "RTL", "Verilog", "GDSII",
+    "synthesis", "placement", "routing", "hardening",
+    "sky130", "Tiny Tapeout"
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: Manufacturing",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+[project.scripts]
+microlane = "microlane.flow.command_line:main"
+
+[project.urls]
+Repository = "https://github.com/htfab/ttsky-custom-flow"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+microlane = ["tech/*/std_cells.gds"]
+
+[tool.setuptools_scm]
+version_file = "src/microlane/_version.py"

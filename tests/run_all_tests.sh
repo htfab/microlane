@@ -1,0 +1,12 @@
+#!/bin/bash
+./harden_cmdline.sh
+./cocotb_rtl.sh
+./cocotb_gl.sh
+./drc.sh
+./spice_extract.sh
+./lvs.sh
+./tt_precheck.sh
+./spice_sim.sh
+./spice_sim_verify.sh
+./harden_module.sh
+./harden_script.sh

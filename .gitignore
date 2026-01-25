@@ -1,0 +1,15 @@
+*~
+*.swp
+*.vcd
+*.raw
+*.egg-info
+.DS_Store
+.idea
+runs
+tt_submission
+__pycache__
+_version.py
+build/
+dist/
+tests/logs/
+tests/outputs/

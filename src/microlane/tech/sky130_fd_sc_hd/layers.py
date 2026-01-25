@@ -1,0 +1,21 @@
+LAYERS = {
+    "pr_boundary": (235, 4),
+    "li1": (67, 20),
+    "mcon": (67, 44),
+    "met1": (68, 20),
+    "via1": (68, 44),
+    "met2": (69, 20),
+    "via2": (69, 44),
+    "met3": (70, 20),
+    "via3": (70, 44),
+    "met4": (71, 20),
+    "met4_pin": (71, 16),
+    "met4_label": (71, 5),
+    # layers repurposed for debug overlays
+    "met5": (72, 20),
+    "li1_blockage": (67, 10),
+    "met1_blockage": (68, 10),
+    "met2_blockage": (69, 10),
+    "met3_blockage": (70, 10),
+    "met4_blockage": (71, 10),
+}
