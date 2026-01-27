@@ -318,28 +318,19 @@ def run_routing(layout):
             layer_grid = grid.layers[layer]
             ww = layer_grid.x.width
             wh = layer_grid.y.width
-            sp = layout.rules.min_spacing[layer]
-            blockage_rects[layer] = Rect(
-                x1=0, y1=0, x2=ww + 2 * sp, y2=wh + 2 * sp
-            ).center_offset()
+            blockage_rects[layer] = Rect(x1=0, y1=0, x2=ww, y2=wh).center_offset()
         elif layer in vias:
             uw, uh = grid.vias[layer].upper.size()
-            blockage_rects_upper[layer] = Rect(
-                x1=0, y1=0, x2=uw + 2 * sp, y2=uh + 2 * sp
-            ).center_offset()
+            blockage_rects_upper[layer] = Rect(x1=0, y1=0, x2=uw, y2=uh).center_offset()
             lw, lh = grid.vias[layer].lower.size()
-            blockage_rects_lower[layer] = Rect(
-                x1=0, y1=0, x2=lw + 2 * sp, y2=lh + 2 * sp
-            ).center_offset()
+            blockage_rects_lower[layer] = Rect(x1=0, y1=0, x2=lw, y2=lh).center_offset()
     for rect, layer, label, _ in layout.floorplan.resolve_rects():
         if layer in qt:
-            if cfg_pdn_space:
-                rect = rect.bloated(cfg_pdn_space)
+            rect = rect.bloated(layout.rules.min_spacing.get(layer, 0) + cfg_pdn_space)
             qt[layer].add_rect(rect)
     for inst in layout.instances:
         for layer, rect in inst.resolve_blockages(layout.cell_data):
-            if cfg_cell_space:
-                rect = rect.bloated(cfg_cell_space)
+            rect = rect.bloated(layout.rules.min_spacing.get(layer, 0) + cfg_cell_space)
             qt[layer].add_rect(rect)
     feedback_unit = len(vertex_pos) // 32
     feedback_counter = 0

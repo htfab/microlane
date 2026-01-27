@@ -46,6 +46,6 @@ DEFAULT_CONFIG = {
         12500,
         8000,
     ),
-    "routing.pdn_extra_blockage": 0,
+    "routing.pdn_extra_blockage": 20,
     "routing.std_cell_extra_blockage": 0,
 }
