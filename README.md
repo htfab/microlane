@@ -25,11 +25,9 @@ simulation.
   This ensures that it will work at some frequency but not at a particular one
   known in advance. Also, two physical clock ticks will correspond to one
   logical clock tick.
-- There is no buffering for high fanout nets. Not even for clock and reset,
-  which are routed as regular signals. The design should still work but at
-  a lower speed.
 - There is no separate global and detailed placement, nor global and detailed
   routing. Performing them in a single step incurs extra runtime and memory use.
+- There is no antenna check.
 - The flow is in general rough around the edges. Features not covered by the demo
   design are only lightly tested and might break or raise "not implemented" errors.
   Changing the random seed can cause DRC violations in designs that worked previously.
