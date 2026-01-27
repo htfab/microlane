@@ -33,11 +33,7 @@ with open(layout_spice) as f:
             assert conn_dict["VGND"] == "VGND"
             assert conn_dict["VPB"] == "VPWR"
             assert conn_dict["VNB"] == "VGND"
-            del conn_dict["VPWR"]
-            del conn_dict["VGND"]
-            del conn_dict["VPB"]
-            del conn_dict["VNB"]
-            if not conn_dict:
+            if "__decap_" in cell:
                 continue
             assert inst not in layout_instances
             layout_instances[inst] = conn_dict
@@ -64,10 +60,6 @@ with open(gl_netlist) as f:
         assert conn_dict["VGND"] == "VGND"
         assert conn_dict["VPB"] == "VPWR"
         assert conn_dict["VNB"] == "VGND"
-        del conn_dict["VPWR"]
-        del conn_dict["VGND"]
-        del conn_dict["VPB"]
-        del conn_dict["VNB"]
         assert inst not in gl_instances
         gl_instances[inst] = conn_dict
 
