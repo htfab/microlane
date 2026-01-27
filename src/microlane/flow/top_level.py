@@ -4,6 +4,7 @@ from ..impl.placement import run_placement
 from ..impl.routing import run_routing
 from ..impl.streamout import gds_streamout, lef_streamout
 from ..synth.bit_blast import BitBlaster
+from ..synth.buffer import Bufferer
 from ..synth.clean import Cleaner
 from ..synth.clock_split import ClockSplitter
 from ..synth.elaborate import Elaborator
@@ -82,15 +83,21 @@ class Flow:
             with open(f"{run_dir}/s05_clock_split.tree", "w") as f:
                 dump_tree(tree, f)
 
+        progress.step("Buffering", 1)
+        tree = Bufferer().process(tree)
+        if dump_synth_trees:
+            with open(f"{run_dir}/s06_buffer.tree", "w") as f:
+                dump_tree(tree, f)
+
         progress.step("Tech mapping", 1)
         tree = TechMapper().process(tree)
         if dump_synth_trees:
-            with open(f"{run_dir}/s06_tech_map.tree", "w") as f:
+            with open(f"{run_dir}/s07_tech_map.tree", "w") as f:
                 dump_tree(tree, f)
 
         netlist = get_netlist(tree)
         if dump_synth_trees:
-            with open(f"{run_dir}/s07_netlist.tree", "w") as f:
+            with open(f"{run_dir}/s08_netlist.tree", "w") as f:
                 dump_tree(netlist, f)
 
         if project_name is None:

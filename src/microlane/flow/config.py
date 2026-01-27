@@ -27,6 +27,8 @@ DEFAULT_CONFIG = {
     "synth.split_clock": True,
     "synth.clock_net": "clk",
     "synth.reset_n_net": "rst_n",
+    # bufferer
+    "synth.max_fanout": 10,
     # placement
     "placement.random_seed": 0,
     "placement.init_temperature": 1000,
