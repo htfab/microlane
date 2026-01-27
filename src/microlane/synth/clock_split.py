@@ -49,6 +49,7 @@ class ClockSplitter(NodeProcessor):
         clock_gen_t3 = self.create_net()
         clock_gen_t4 = self.create_net()
         clock_gen_t5 = self.create_net()
+        clock_gen_t6 = self.create_net()
         clock_phase1 = self.create_net()
         clock_phase2 = self.create_net()
 
@@ -83,15 +84,16 @@ class ClockSplitter(NodeProcessor):
 
         # Build the two-phase clock generator network
         self.create_gate(GT.INV, A=clock_net, Y=clock_gen_t1)
-        self.create_gate(GT.DFF, CLK=clock_gen_t1, D=clock_gen_t5, Q=clock_gen_t2)
-        self.create_gate(GT.DFF, CLK=clock_net, D=reset_n_net, Q=clock_gen_t3)
-        self.create_gate(GT.OR_B, A=reset_n_net, B_N=clock_gen_t3, X=clock_gen_t4)
-        self.create_gate(GT.AND_B, A_N=clock_gen_t2, B=clock_gen_t4, X=clock_gen_t5)
+        self.create_gate(GT.DFF, CLK=clock_gen_t1, D=clock_gen_t6, Q=clock_gen_t2)
+        self.create_gate(GT.INV, A=clock_gen_t2, Y=clock_gen_t3)
+        self.create_gate(GT.DFF, CLK=clock_net, D=reset_n_net, Q=clock_gen_t4)
+        self.create_gate(GT.OR_B, A=reset_n_net, B_N=clock_gen_t4, X=clock_gen_t5)
+        self.create_gate(GT.AND_B, A_N=clock_gen_t2, B=clock_gen_t5, X=clock_gen_t6)
         self.create_gate(
             GT.CLKGATE, CLK=clock_net, GATE=clock_gen_t2, GCLK=clock_phase1
         )
         self.create_gate(
-            GT.CLKGATE, CLK=clock_net, GATE=clock_gen_t5, GCLK=clock_phase2
+            GT.CLKGATE, CLK=clock_net, GATE=clock_gen_t3, GCLK=clock_phase2
         )
 
         # Return the modified module

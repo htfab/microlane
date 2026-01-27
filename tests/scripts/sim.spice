@@ -20,7 +20,7 @@ VVPWR      VPWR      GND  1.8
 VVGND      VGND      GND  0
 Vena       ena       GND  1.8
 Vclk       clk       GND  PULSE(1.8 0  5u 0 0  5u 10u 0)
-Vrst_n     rst_n     GND  PULSE(1.8 0 10u 0 0 50u 60u 1)
+Vrst_n     rst_n     GND  PULSE(1.8 0 12u 0 0 50u 62u 1)
 Vui_in[0]  ui_in[0]  GND  0
 Vui_in[1]  ui_in[1]  GND  0
 Vui_in[2]  ui_in[2]  GND  0

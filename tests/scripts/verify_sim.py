@@ -62,21 +62,8 @@ for pt in range(raw.get_len()):
     v_uo_out = [w[pt] for w in w_uo_out]
     uo_out = [v > 0.9 for v in v_uo_out]
     value = sum(1 << i for i in range(8) if uo_out[i])
-    if cycle == 7:
-        ref = expected_output[0]
-    else:
-        if cycle == 8:
-            refa = expected_output[1]
-            refb = expected_output[0]
-            if value == refa:
-                delay = 6
-            elif value == refb:
-                delay = 7
-            else:
-                print(f"cycle {cycle}, value {value}, expected {refa} or {refb}")
-                assert False
-        ref_index = ((cycle - delay) // 2) % len(expected_output)
-        ref = expected_output[ref_index]
+    ref_index = ((cycle - 7) // 2) % len(expected_output)
+    ref = expected_output[ref_index]
     print(f"cycle {cycle}, value {value}, expected {ref}")
     assert value == ref
 
