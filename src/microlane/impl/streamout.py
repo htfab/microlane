@@ -1,5 +1,3 @@
-import os
-
 from ..util import progress
 from ..util.gds import GdsLibrary, GdsWriter
 from ..util.lef import LefWriter
@@ -7,9 +5,6 @@ from ..util.lef import LefWriter
 
 def gds_streamout(layout, gds):
     progress.step("Writing GDS", 1)
-    pdk_root = os.environ.get("PDK_ROOT")
-    if pdk_root is None:
-        raise RuntimeError("PDK_ROOT is unset")
     air_wires_in_gds = layout.config["debug.air_wires_in_gds"]
     output_name = "top" if layout.name is None else layout.name
     layers = layout.config["tech"]["layers"]
