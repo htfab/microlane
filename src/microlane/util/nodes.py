@@ -243,6 +243,8 @@ class NodeProcessor:
             return {dk: self.process_obj(dv) for dk, dv in obj.items()}
         elif isinstance(obj, getattr(os, "PathLike", type(None))):
             return obj
+        elif isinstance(obj, type):
+            return obj
         else:
             raise RuntimeError(
                 f"Node processor {self.__class__.__name__} has no pass-through implementation for {obj}"

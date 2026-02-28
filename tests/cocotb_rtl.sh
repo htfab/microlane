@@ -2,12 +2,18 @@
 echo '======================='
 echo 'running test cocotb_rtl'
 echo '======================='
-rm -rf outputs/cocotb_rtl logs/cocotb_rtl.log
-mkdir -p outputs/cocotb_rtl
-mkdir -p logs
-cp src/demo.v outputs/cocotb_rtl/
-cp scripts/cocotb/tb.v outputs/cocotb_rtl/
-cp scripts/cocotb/test.py outputs/cocotb_rtl/
-cp scripts/cocotb/rtl.mk outputs/cocotb_rtl/Makefile
-cd outputs/cocotb_rtl
-make -B 2>&1 | tee ../../logs/cocotb_rtl.log
+if [ -z "$PDK" ]; then
+    echo "PDK is unset" && exit 1
+fi
+export TEST_ROOT=$(dirname $(realpath $0))
+export STEP_DIR=$TEST_ROOT/outputs/$PDK
+export LOG_DIR=$TEST_ROOT/logs/$PDK
+rm -rf $STEP_DIR/cocotb_rtl $LOG_DIR/cocotb_rtl.log
+mkdir -p $STEP_DIR/cocotb_rtl
+mkdir -p $LOG_DIR
+cp $TEST_ROOT/src/demo.v $STEP_DIR/cocotb_rtl/
+cp $TEST_ROOT/scripts/cocotb/tb.v $STEP_DIR/cocotb_rtl/
+cp $TEST_ROOT/scripts/cocotb/test.py $STEP_DIR/cocotb_rtl/
+cp $TEST_ROOT/scripts/cocotb/rtl.mk $STEP_DIR/cocotb_rtl/Makefile
+cd $STEP_DIR/cocotb_rtl
+make -B 2>&1 | tee $LOG_DIR/cocotb_rtl.log

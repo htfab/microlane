@@ -29,7 +29,14 @@ def main():
         exit(1)
     source_file = sys.argv[1]
 
-    flow = Flow()
+    pdk = os.environ.get("PDK", None)
+    scl = os.environ.get("SCL", None)
+
+    if pdk is None:
+        print("Missing PDK environment variable", file=sys.stderr)
+        exit(1)
+
+    flow = Flow(pdk, scl)
     flow.config.update(
         {
             "source_files": (source_file,),

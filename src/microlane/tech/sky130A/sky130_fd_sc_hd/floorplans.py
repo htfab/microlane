@@ -51,7 +51,7 @@ FLOORPLANS = {
             ("met4_label", (146740, 111020), ["pin"], "tt_pins", 0.3),
         ],
         "ports": [
-            ("met4", (146740, 110860), ["pin"], "tt_pins"),
+            ("met4", (146740, 110860), ["pin"], "tt_pins", "default"),
         ],
         "lef_units_per_micron": 1000,
         "lef_ports": [

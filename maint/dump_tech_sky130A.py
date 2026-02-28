@@ -7,7 +7,7 @@ from microlane.util.gds import GdsLibrary, GdsWriter
 pdk_dir = os.environ["PDK_ROOT"]
 pdk = "sky130A"
 scl = "sky130_fd_sc_hd"
-output_dir = f"../src/microlane/tech/{scl}"
+output_dir = f"../src/microlane/tech/{pdk}/{scl}"
 
 cells = [
     ("sky130_fd_sc_hd__buf_1", ["logic"]),
@@ -89,8 +89,13 @@ with open(f"{output_dir}/std_cells.py", "w") as f:
     for cell, mag in mags.items():
         pins = {}
         boundary = []
+        inputs = set()
+        outputs = set()
         with open(mag) as g:
+            label = None
             for line in g:
+                last_label = label
+                label = None
                 if line.startswith("flabel "):
                     _, layer, _, x1, y1, x2, y2, _, _, _, _, _, _, label = (
                         line.strip().split(" ")
@@ -114,7 +119,17 @@ with open(f"{output_dir}/std_cells.py", "w") as f:
                         assert (cl, cx, cy) == ("li1", 235, 1530)
                         cl, cx, cy = "met1", 230, 1190
                     assert cy % 340 == 170
-                    pins.setdefault(label, []).append((cl, cx, cy))
+                    ca = "default"
+                    pins.setdefault(label, []).append((cl, cx, cy, ca))
+                elif line.startswith("port "):
+                    if last_label is not None:
+                        port_args = line.strip().split(" ")
+                        if len(port_args) > 4:
+                            direction = port_args[4]
+                            if direction == "input":
+                                inputs.add(last_label)
+                            if direction == "output":
+                                outputs.add(last_label)
                 elif line.startswith("string FIXED_BBOX "):
                     _, _, x1, y1, x2, y2 = line.strip().split(" ")
                     x1, y1, x2, y2 = (int(t) * 5 for t in (x1, y1, x2, y2))
@@ -134,10 +149,14 @@ with open(f"{output_dir}/std_cells.py", "w") as f:
         f.write(f'        "roles": {roles_str},\n')
         f.write(f'        "sites": {sites},\n')
         f.write(f'        "boundary": {boundary},\n')
+        inputs_str = "[" + ", ".join(f'"{i}"' for i in sorted(inputs)) + "]"
+        f.write(f'        "inputs": {inputs_str},\n')
+        outputs_str = "[" + ", ".join(f'"{i}"' for i in sorted(outputs)) + "]"
+        f.write(f'        "outputs": {outputs_str},\n')
         if pins:
             f.write('        "pins": {\n')
             for k, v in sorted(pins.items()):
-                v_s = [f'("{vl}", {vx}, {vy})' for vl, vx, vy in v]
+                v_s = [f'("{vl}", {vx}, {vy}, "{va}")' for vl, vx, vy, va in v]
                 v_c = "[" + ", ".join(v_s) + "]"
                 if len(v_c) < 68:
                     f.write(f'            "{k}": {v_c},\n')

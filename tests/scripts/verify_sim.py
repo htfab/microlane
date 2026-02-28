@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import os
+
 from spicelib import RawRead
 
 expected_output = [
@@ -27,6 +29,14 @@ expected_output = [
     0b00000000,
 ]
 
+pdk = os.environ["PDK"]
+if pdk == "sky130A":
+    VDD = 1.8
+elif pdk == "ihp-sg13g2":
+    VDD = 1.2
+else:
+    raise NotImplementedError("Unknown PDK")
+
 raw = RawRead("sim.raw")
 
 w_clk = raw.get_wave("v(clk)")
@@ -39,17 +49,17 @@ for pt in range(raw.get_len()):
     negedge_clk = False
     v_clk = w_clk[pt]
     if clk:
-        if v_clk < 0.6:
+        if v_clk < VDD / 4:
             clk = False
             negedge_clk = True
     else:
-        if v_clk > 1.2:
+        if v_clk > VDD * 3 / 4:
             clk = True
     if not negedge_clk:
         continue
     cycle += 1
     v_rst_n = w_rst_n[pt]
-    rst_n = v_rst_n > 0.9
+    rst_n = v_rst_n > VDD / 2
     if cycle == 1:
         print(f"cycle {cycle}, rst_n {'high' if rst_n else 'low'}, expected high")
         assert rst_n
@@ -60,7 +70,7 @@ for pt in range(raw.get_len()):
         continue
     assert rst_n
     v_uo_out = [w[pt] for w in w_uo_out]
-    uo_out = [v > 0.9 for v in v_uo_out]
+    uo_out = [v > VDD / 2 for v in v_uo_out]
     value = sum(1 << i for i in range(8) if uo_out[i])
     ref_index = ((cycle - 7) // 2) % len(expected_output)
     ref = expected_output[ref_index]

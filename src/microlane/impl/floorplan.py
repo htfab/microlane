@@ -47,13 +47,14 @@ def load_floorplan_data(config):
             )
         )
     ports = []
-    for layer, (x, y), axis_refs, label in data["ports"]:
+    for layer, (x, y), axis_refs, label, access_type in data["ports"]:
         ports.append(
             Array(
                 layer=layer,
                 base_item=Point(x=x, y=y),
                 axis_refs=axis_refs,
                 label=label,
+                data=access_type,
             )
         )
     lef_ports = []
@@ -114,11 +115,14 @@ def load_routing_grid(config):
             upper=Rect(x1=0, y1=0, x2=uw, y2=uh).center_offset(),
         )
     pin_access = {}
-    for pin_layer, access_rects in data["pin_access"].items():
-        rects = []
-        for layer, w, h in access_rects:
-            rects.append((layer, Rect(x1=0, y1=0, x2=w, y2=h).center_offset()))
-        pin_access[pin_layer] = rects
+    for pin_layer, access_types in data["pin_access"].items():
+        rects_by_type = {}
+        for access_type, access_rects in access_types.items():
+            rects = []
+            for layer, w, h in access_rects:
+                rects.append((layer, Rect(x1=0, y1=0, x2=w, y2=h).center_offset()))
+            rects_by_type[access_type] = rects
+        pin_access[pin_layer] = rects_by_type
     order = data["order"]
     above = {layer: None for layer in layers}
     below = {layer: None for layer in layers}

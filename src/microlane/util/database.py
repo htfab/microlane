@@ -15,8 +15,8 @@ class Placement(DataClass):
 class Port(DataClass):
     """external pin of the entire design, as used in netlist or floorplan"""
 
-    _attributes = ["name", "direction", "term", "layer", "x", "y"]
-    _defaults = {"layer": None, "x": None, "y": None}
+    _attributes = ["name", "direction", "term", "layer", "x", "y", "access_type"]
+    _defaults = {"layer": None, "x": None, "y": None, "access_type": None}
 
 
 class Instance(DataClass):
@@ -46,9 +46,9 @@ class Instance(DataClass):
         boundary = cell.boundary
         pins = {}
         for label, points in cell.pins.items():
-            for layer, x, y in points:
+            for layer, x, y, access_type in points:
                 rx, ry = self._resolve_point(boundary, x, y)
-                pins.setdefault(label, []).append((layer, rx, ry))
+                pins.setdefault(label, []).append((layer, rx, ry, access_type))
         return pins
 
     def resolve_blockages(self, cell_data):

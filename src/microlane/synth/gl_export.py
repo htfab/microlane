@@ -1,4 +1,3 @@
-from ..util.logic import GATE_OUTPUTS
 from ..util.nodes import GateNode, ModuleNode, NetlistNode, NetNode, PortNode, RootNode
 from ..util.structures import UnionFind
 
@@ -134,6 +133,7 @@ def write_gl_verilog(node, file, powered=False):
 def get_netlist(node):
     assert isinstance(node, RootNode)
     assert len(node.modules) == 1
+    std_cells = node.config["tech"]["std_cells"]
     module = node.modules[0]
     _, _, nl_ports, pnl_ports, port_dirs = prepare_ports(module, node.config)
     nets = {}
@@ -164,14 +164,16 @@ def get_netlist(node):
             current_term += 1
     for gate in module.gates:
         assert isinstance(gate, GateNode)
+        assert gate.name in std_cells
         instance = name_fixer.resolve(gate.instance)
         terms = {}
+        std_cell_outputs = std_cells[gate.name]["outputs"]
         for k, v in gate.terminals.items():
             assert isinstance(v, NetNode)
             vname = name_fixer.resolve(v.name)
             assert vname in nets
             nets[vname].append(current_term)
-            if k in GATE_OUTPUTS:
+            if k in std_cell_outputs:
                 drivers[vname].append(current_term)
             terms[k] = current_term
             current_term += 1

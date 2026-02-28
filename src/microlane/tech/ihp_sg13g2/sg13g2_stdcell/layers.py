@@ -1,0 +1,26 @@
+LAYERS = {
+    "pr_boundary": (189, 4),
+    "Metal1": (8, 0),
+    "Via1": (19, 0),
+    "Metal2": (10, 0),
+    "Via2": (29, 0),
+    "Metal3": (30, 0),
+    "Via3": (49, 0),
+    "Metal4": (50, 0),
+    "Metal4_pin": (50, 2),
+    "Metal4_text": (50, 25),
+    "Via4": (66, 0),
+    "Metal5": (67, 0),
+    "TopVia1": (125, 0),
+    "TopMetal1": (126, 0),
+    "TopMetal1_pin": (126, 2),
+    "TopMetal1_text": (126, 25),
+    # layers repurposed for debug overlays
+    "TopMetal2": (134, 0),
+    "Metal1_blockage": (8, 23),  # nofill
+    "Metal2_blockage": (10, 23),
+    "Metal3_blockage": (30, 23),
+    "Metal4_blockage": (50, 23),
+    "Metal5_blockage": (67, 23),
+    "TopMetal1_blockage": (126, 23),
+}

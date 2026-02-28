@@ -19,19 +19,25 @@ from .report import write_metrics_json, write_pdk_json
 
 
 class Flow:
-    def __init__(self):
+    def __init__(self, pdk, scl=None):
         self.config = dict(DEFAULT_CONFIG)
+        self.pdk = pdk
+        self.scl = scl
 
     def set_config(self, config):
         self.config.update(config)
         return self
 
     def load_tech(self):
-        self.config["tech"] = load_tech_data(self.config["std_cell_library"])
+        self.config["tech"] = load_tech_data(self.pdk, self.scl)
         pdk_info = self.config["tech"]["pdk_info"]
-        assert pdk_info["pdk"] == self.config["pdk"]
-        assert pdk_info["pdk_variant"] == self.config["pdk_variant"]
-        assert pdk_info["std_cell_library"] == self.config["std_cell_library"]
+        assert pdk_info["pdk_variant"] == self.pdk
+        if self.scl is not None:
+            assert pdk_info["std_cell_library"] == self.scl
+        self.config["pdk"] = pdk_info["pdk"]
+        self.config["pdk_variant"] = pdk_info["pdk_variant"]
+        self.config["std_cell_library"] = pdk_info["std_cell_library"]
+        self.set_config(self.config["tech"]["config_overlay"])
 
     def run(self):
         self.load_tech()
@@ -42,6 +48,7 @@ class Flow:
         show_progress = config["show_progress"]
         dump_synth_trees = config["debug.dump_synth_trees"]
         skip_routing = config["debug.skip_routing"]
+        skip_patching = config["debug.skip_patching"]
 
         if len(source_files) != 1:
             raise NotImplementedError(
@@ -120,8 +127,9 @@ class Flow:
             progress.step("Routing")
             run_routing(layout)
 
-            progress.step("Adding patch metals")
-            add_patch_metals(layout)
+            if not skip_patching:
+                progress.step("Adding patch metals")
+                add_patch_metals(layout)
 
         progress.step("Streamout")
         gds_streamout(layout, f"{run_dir}/{project_name}.gds")

@@ -1,3 +1,4 @@
+from .config import CONFIG_OVERLAY
 from .floorplans import FLOORPLANS
 from .layers import LAYERS
 from .pdk_info import PDK_INFO
@@ -16,6 +17,7 @@ except ImportError:
     std_cells_gds = __file__.rsplit("/", 1)[0] + "/std_cells.gds"
 
 TECH_DATA = {
+    "config_overlay": CONFIG_OVERLAY,
     "pdk_info": PDK_INFO,
     "tech_map": TECH_MAP,
     "pnl_terminals": PNL_TERMINALS,

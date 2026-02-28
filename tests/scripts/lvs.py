@@ -1,7 +1,29 @@
 #!/usr/bin/env python3
 
+import os
+
 layout_spice = "tt_um_microlane_demo.spice"
 gl_netlist = "gate_level_netlist.v"
+
+pdk = os.environ["PDK"]
+
+if pdk == "sky130A":
+    power_map = {
+        "VPWR": "VPWR",
+        "VGND": "VGND",
+        "VPB": "VPWR",
+        "VNB": "VGND",
+    }
+    stdcell_prefix = "sky130_fd_sc_hd__"
+elif pdk == "ihp-sg13g2":
+    power_map = {
+        "VDD": "VPWR",
+        "VSS": "VGND",
+    }
+    stdcell_prefix = "sg13g2_"
+else:
+    raise NotImplementedError("Unknown PDK")
+
 
 layout_instances = {}
 with open(layout_spice) as f:
@@ -29,11 +51,10 @@ with open(layout_spice) as f:
             connections = ld[1:-1]
             assert len(connections) == len(pins[cell])
             conn_dict = dict(zip(pins[cell], connections))
-            assert conn_dict["VPWR"] == "VPWR"
-            assert conn_dict["VGND"] == "VGND"
-            assert conn_dict["VPB"] == "VPWR"
-            assert conn_dict["VNB"] == "VGND"
-            if "__decap_" in cell:
+            for k, v in power_map.items():
+                assert conn_dict[k] == v
+                del conn_dict[k]
+            if not conn_dict:
                 continue
             assert inst not in layout_instances
             layout_instances[inst] = conn_dict
@@ -44,7 +65,7 @@ with open(gl_netlist) as f:
     lines = contents.strip().replace("\n", "").split(";")
     for line in lines:
         ld = line.strip().split(")")
-        if not ld[0].startswith("sky130_"):
+        if not ld[0].startswith(stdcell_prefix):
             continue
         ls = ld[0].split()
         cell = ls[0]
@@ -56,10 +77,9 @@ with open(gl_netlist) as f:
                 key, value = la.split("(")
                 assert key not in conn_dict
                 conn_dict[key] = value
-        assert conn_dict["VPWR"] == "VPWR"
-        assert conn_dict["VGND"] == "VGND"
-        assert conn_dict["VPB"] == "VPWR"
-        assert conn_dict["VNB"] == "VGND"
+        for k, v in power_map.items():
+            assert conn_dict[k] == v
+            del conn_dict[k]
         assert inst not in gl_instances
         gl_instances[inst] = conn_dict
 

@@ -1,3 +1,5 @@
+from math import ceil, sqrt
+
 from ..util.structures import QuadTree, Rect, UnionFind
 
 
@@ -81,7 +83,6 @@ def add_patch_metals(layout):
             continue
         grid_unit = layout.rules.grid_unit[layer]
         min_area = layout.rules.min_area[layer]
-        direction = grid.layers[layer].preferred
         x_coords = sorted({rect.x1 for rect in rects} | {rect.x2 for rect in rects})
         y_coords = sorted({rect.y1 for rect in rects} | {rect.y2 for rect in rects})
         area = 0
@@ -101,29 +102,15 @@ def add_patch_metals(layout):
         if area >= min_area:
             continue
         area_diff = min_area - area
-        assert direction in ("horizontal", "vertical")
-        if direction == "horizontal":
-            increase = (
-                -((-area_diff) // (2 * (y_coords[-1] - y_coords[0]) * grid_unit))
-                * grid_unit
-            )
-            resized_rects = [
-                Rect(
-                    x1=rect.x1 - increase, y1=rect.y1, x2=rect.x2 + increase, y2=rect.y2
-                )
-                for rect in rects
-            ]
-        elif direction == "vertical":
-            increase = (
-                -((-area_diff) // (2 * (x_coords[-1] - x_coords[0]) * grid_unit))
-                * grid_unit
-            )
-            resized_rects = [
-                Rect(
-                    x1=rect.x1, y1=rect.y1 - increase, x2=rect.x2, y2=rect.y2 + increase
-                )
-                for rect in rects
-            ]
+        resized_rects = []
+        for rect in rects:
+            # bloat the rectangle just enough to increase its area by area_diff
+            x1, y1, x2, y2 = rect.x1, rect.y1, rect.x2, rect.y2
+            half_perimeter = (x2 - x1) + (y2 - y1)
+            # solve the quadratic equation
+            increase = (sqrt(half_perimeter**2 + 4 * area_diff) - half_perimeter) / 4
+            increase = ceil(increase / grid_unit) * grid_unit
+            resized_rects.append(rect.bloated(increase))
         updates[(net, layer, group)] = resized_rects
     rect_connected_groups |= updates
 

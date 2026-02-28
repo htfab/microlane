@@ -20,12 +20,15 @@ def run_placement(layout):
     ports_seen = set()
     term_to_port = {}
     port_pos = []
-    for i, (point, layer, label, _) in enumerate(layout.floorplan.resolve_ports()):
+    for i, (point, layer, label, access_type) in enumerate(
+        layout.floorplan.resolve_ports()
+    ):
         if label not in nl_ports:
             raise RuntimeError(f"Port {label} exists in floorplan but not in netlist")
         port = nl_ports[label].copy()
         port.x, port.y = point.as_tuple()
         port.layer = layer
+        port.access_type = access_type
         ports.append(port)
         ports_seen.add(label)
         assert port.term not in term_to_port
@@ -86,38 +89,49 @@ def run_placement(layout):
             sites[gy][gx + s] += 1
 
     # add endcap cells
-    endcaps = [
-        name for name, data in layout.cell_data.items() if "endcap" in data.roles
-    ]
-    if len(endcaps) != 1:
-        raise RuntimeError(
-            f"Expected exactly one cell type marked as endcap, found: {endcaps}"
-        )
-    endcap = endcaps[0]
-    endcap_width, endcap_height = layout.cell_data[endcap].sites
-    assert endcap_height == 1
-    for j in range(gh):
-        add_special_cell(f"endcap_{j}_left", endcap, 0, j, endcap_width, flip=False)
-        add_special_cell(
-            f"endcap_{j}_left", endcap, gw - endcap_width, j, endcap_width, flip=True
-        )
+    use_endcap_cells = layout.config["placement.use_endcap_cells"]
+    if use_endcap_cells:
+        endcaps = [
+            name for name, data in layout.cell_data.items() if "endcap" in data.roles
+        ]
+        if len(endcaps) != 1:
+            raise RuntimeError(
+                f"Expected exactly one cell type marked as endcap, found: {endcaps}"
+            )
+        endcap = endcaps[0]
+        endcap_width, endcap_height = layout.cell_data[endcap].sites
+        assert endcap_height == 1
+        for j in range(gh):
+            add_special_cell(f"endcap_{j}_left", endcap, 0, j, endcap_width, flip=False)
+            add_special_cell(
+                f"endcap_{j}_left",
+                endcap,
+                gw - endcap_width,
+                j,
+                endcap_width,
+                flip=True,
+            )
+    else:
+        endcap_width = 0
 
     # add tap cells
-    taps = [name for name, data in layout.cell_data.items() if "tap" in data.roles]
-    if len(taps) != 1:
-        raise RuntimeError(
-            f"Expected exactly one cell type marked as tap, found: {taps}"
-        )
-    tap = taps[0]
-    tap_width, tap_height = layout.cell_data[tap].sites
-    tap_distance = layout.floorplan.tap_distance_sites
-    assert tap_height == 1
-    for j in range(gh):
-        for i in range(gw // tap_distance - 1):
-            if (i + j) % 2 == 0 or j in (0, gh - 1):
-                add_special_cell(
-                    f"tap_{j}_{i}", tap, (i + 1) * tap_distance, j, tap_width, "N"
-                )
+    use_tap_cells = layout.config["placement.use_tap_cells"]
+    if use_tap_cells:
+        taps = [name for name, data in layout.cell_data.items() if "tap" in data.roles]
+        if len(taps) != 1:
+            raise RuntimeError(
+                f"Expected exactly one cell type marked as tap, found: {taps}"
+            )
+        tap = taps[0]
+        tap_width, tap_height = layout.cell_data[tap].sites
+        tap_distance = layout.floorplan.tap_distance_sites
+        assert tap_height == 1
+        for j in range(gh):
+            for i in range(gw // tap_distance - 1):
+                if (i + j) % 2 == 0 or j in (0, gh - 1):
+                    add_special_cell(
+                        f"tap_{j}_{i}", tap, (i + 1) * tap_distance, j, tap_width, "N"
+                    )
 
     # set up adjacency lists
     net_insts = []
@@ -328,9 +342,14 @@ def run_placement(layout):
             if sites[j][i] > 1:
                 raise RuntimeError(f"Overlapping cells at ({i}, {j}) after placement")
             if sites[j][i] == 0:
+                max_filler_size_capped = min(max_filler_size, gw - i)
                 free_width = next(
-                    (k for k in range(1, max_filler_size) if sites[j][i + k] > 0),
-                    max_filler_size,
+                    (
+                        k
+                        for k in range(1, max_filler_size_capped)
+                        if sites[j][i + k] > 0
+                    ),
+                    max_filler_size_capped,
                 )
                 filler_width = max_size_up_to[free_width]
                 filler = fillers_by_size[filler_width]

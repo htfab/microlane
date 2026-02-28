@@ -1,6 +1,14 @@
-def load_tech_data(tech):
-    if tech == "sky130_fd_sc_hd":
-        from .sky130_fd_sc_hd import TECH_DATA
+def load_tech_data(pdk, scl=None):
+    if pdk == "sky130A":
+        if scl == "sky130_fd_sc_hd" or scl is None:
+            from .sky130A.sky130_fd_sc_hd import TECH_DATA
+        else:
+            raise NotImplementedError(f"Unknown SCL {scl} for PDK {pdk}")
+    elif pdk == "ihp-sg13g2":
+        if scl == "sg13g2_stdcell" or scl is None:
+            from .ihp_sg13g2.sg13g2_stdcell import TECH_DATA
+        else:
+            raise NotImplementedError(f"Unknown SCL {scl} for PDK {pdk}")
     else:
-        raise NotImplementedError(f"Unknown technology: {tech}")
+        raise NotImplementedError(f"Unknown PDK {pdk}")
     return TECH_DATA

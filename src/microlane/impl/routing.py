@@ -28,6 +28,20 @@ def closest_in_range(value, range_):
         return tuple(sorted(res))
 
 
+# restrict a Python range object to values strictly between min_open and max_open
+def restricted_range(range_, min_open, max_open):
+    start, stop, step = range_.start, range_.stop, range_.step
+    if step > 0:
+        if min_open >= start:
+            start += ((min_open - start) // step + 1) * step
+        return range(start, min(stop, max_open), step)
+    else:
+        if max_open <= start:
+            # step is negative, x // step behaves like -x // -step
+            start += ((max_open - start) // step + 1) * step
+        return range(start, max(stop, min_open), step)
+
+
 def run_routing(layout):
     # build the graph representation of the routing grid
 
@@ -38,7 +52,6 @@ def run_routing(layout):
     vertex_pos = []
     vertex_lookup = {}
     vertex_adj = []
-    vertex_obs = []
     layer_columns = {}
     layer_rows = {}
     layers = []
@@ -56,6 +69,7 @@ def run_routing(layout):
     cfg_access_penalty = layout.config["routing.access_penalty"]
     cfg_pdn_space = layout.config["routing.pdn_extra_blockage"]
     cfg_cell_space = layout.config["routing.std_cell_extra_blockage"]
+    cfg_extra_distance = layout.config["routing.extra_distance"]
 
     progress.step("Grid construction", 1)
     progress.start_dots(2)
@@ -83,7 +97,6 @@ def run_routing(layout):
                 pos = (layer, x, y)
                 vertex_pos.append(pos)
                 vertex_adj.append([])
-                vertex_obs.append([])
                 vertex_lookup[pos] = num_vertices
                 num_vertices += 1
         for y in rows:
@@ -135,7 +148,6 @@ def run_routing(layout):
                     pos = (via, x, y)
                     vertex_pos.append(pos)
                     vertex_adj.append([])
-                    vertex_obs.append([])
                     vertex_lookup[pos] = index
                     # connections to lower layer
                     for ax in adj_columns[x]:
@@ -145,8 +157,6 @@ def run_routing(layout):
                         cost = abs(ax - x) + half_penalty
                         vertex_adj[index].append((cost, index_lower))
                         vertex_adj[index_lower].append((cost, index))
-                        vertex_obs[index].append(index_lower)
-                        vertex_obs[index_lower].append(index)
                     # connections to upper layer
                     for ay in adj_rows[y]:
                         pos_upper = (upper, x, ay)
@@ -155,8 +165,6 @@ def run_routing(layout):
                         cost = abs(ay - y) + half_penalty
                         vertex_adj[index].append((cost, index_upper))
                         vertex_adj[index_upper].append((cost, index))
-                        vertex_obs[index].append(index_upper)
-                        vertex_obs[index_upper].append(index)
         elif v_to_h:
             # lower layer vertical, upper layer horizontal
             columns = lower_columns
@@ -170,7 +178,6 @@ def run_routing(layout):
                     pos = (via, x, y)
                     vertex_pos.append(pos)
                     vertex_adj.append([])
-                    vertex_obs.append([])
                     vertex_lookup[pos] = index
                     # connections to lower layer
                     for ay in adj_rows[y]:
@@ -180,8 +187,6 @@ def run_routing(layout):
                         cost = abs(ay - y) + half_penalty
                         vertex_adj[index].append((cost, index_lower))
                         vertex_adj[index_lower].append((cost, index))
-                        vertex_obs[index].append(index_lower)
-                        vertex_obs[index_lower].append(index)
                     # connections to upper layer
                     for ax in adj_columns[x]:
                         pos_upper = (upper, ax, y)
@@ -190,34 +195,76 @@ def run_routing(layout):
                         cost = abs(ax - x) + half_penalty
                         vertex_adj[index].append((cost, index_upper))
                         vertex_adj[index_upper].append((cost, index))
-                        vertex_obs[index].append(index_upper)
-                        vertex_obs[index_upper].append(index)
         layer_columns[via] = columns
         layer_rows[via] = rows
         progress.add_dot()
 
-    # vias going up and down near the same grid point are blocking each other
-    for index in range(num_vertices):
-        layer, _, _ = vertex_pos[index]
-        if layer in layers:
-            adj_vias = []
-            for _, adj in vertex_adj[index]:
-                adj_layer, _, _ = vertex_pos[adj]
-                if adj_layer in vias:
-                    adj_vias.append(adj)
-            for v1 in adj_vias:
-                for v2 in adj_vias:
-                    if v1 != v2:
-                        vertex_obs[v1].append(v2)
-
     progress.end_dots()
+    progress.step("Spacing rules setup", 1)
+
+    # find rectangles to be drawn for a vertex on a layer/via
+    vertex_rects = {}
+    for layer in grid.order:
+        if layer in vias:
+            vertex_rects[layer] = [
+                (grid.below[layer], grid.vias[layer].lower.size()),
+                (layer, grid.vias[layer].via.size()),
+                (grid.above[layer], grid.vias[layer].upper.size()),
+            ]
+        else:
+            vertex_rects[layer] = [
+                (layer, (grid.layers[layer].x.width, grid.layers[layer].y.width)),
+            ]
+
+    # for any pair of layers, find the rectangle around a vertex on the first layer
+    # that contains any obstructed vertex on the second layer
+    obs_rects = {}
+    for layer1 in grid.order:
+        obs_rects[layer1] = {}
+        for layer2 in grid.order:
+            wmax, hmax = 0, 0
+            for rect1_layer, (w1, h1) in vertex_rects[layer1]:
+                for rect2_layer, (w2, h2) in vertex_rects[layer2]:
+                    if rect1_layer != rect2_layer:
+                        continue
+                    spacing = 2 * layout.rules.min_spacing.get(rect1_layer, 0)
+                    spacing += 2 * cfg_extra_distance
+                    wmax = max(wmax, w1 + w2 + spacing)
+                    hmax = max(hmax, h1 + h2 + spacing)
+            if wmax == 0 or hmax == 0:
+                continue
+            obs_rects[layer1][layer2] = Rect(
+                x1=0, y1=0, x2=wmax, y2=hmax
+            ).center_offset()
+
+    # for every vertex collect every other vertex it obstructs
+    vertex_obs = [set() for _ in range(num_vertices)]
+    for index, (layer, x, y) in enumerate(vertex_pos):
+        for obs_layer, rect in obs_rects[layer].items():
+            rect_shifted = rect.shifted(x, y)
+            columns = restricted_range(
+                layer_columns[obs_layer], rect_shifted.x1, rect_shifted.x2
+            )
+            rows = restricted_range(
+                layer_rows[obs_layer], rect_shifted.y1, rect_shifted.y2
+            )
+            for ox in columns:
+                for oy in rows:
+                    obs_pos = (obs_layer, ox, oy)
+                    assert obs_pos in vertex_lookup
+                    obs_index = vertex_lookup[obs_pos]
+                    if obs_index == index:
+                        continue
+                    vertex_obs[index].add(obs_index)
+                    vertex_obs[obs_index].add(index)
+
     progress.step("Term placement", 1)
 
     # find locations of terms in the netlist
     term_pos = {}
     for port in layout.ports:
         assert port.term not in term_pos
-        term_pos[port.term] = [(port.layer, port.x, port.y)]
+        term_pos[port.term] = [(port.layer, port.x, port.y, port.access_type)]
     for inst in layout.instances:
         pins = inst.resolve_pins(layout.cell_data)
         for pin, term in inst.terms.items():
@@ -229,8 +276,8 @@ def run_routing(layout):
     vertex_to_pin_layer = {}
     for term, positions in term_pos.items():
         access = []
-        for layer, x, y in positions:
-            access_layer, _ = grid.pin_access[layer][0]
+        for layer, x, y, access_type in positions:
+            access_layer, _ = grid.pin_access[layer][access_type][0]
             pos = (access_layer, x, y)
             if pos in vertex_lookup:
                 index = vertex_lookup[pos]
@@ -240,7 +287,7 @@ def run_routing(layout):
                 num_vertices += 1
                 vertex_pos.append(pos)
                 vertex_adj.append([])
-                vertex_obs.append([])
+                vertex_obs.append(set())
                 vertex_lookup[pos] = index
                 access.append(index)
                 for gx in closest_in_range(x, layer_columns[access_layer]):
@@ -252,10 +299,10 @@ def run_routing(layout):
                         cost = abs(x - gx) + abs(y - gy)
                         vertex_adj[index].append((cost, index_access))
                         vertex_adj[index_access].append((cost, index))
-                        vertex_obs[index].append(index_access)
-                        vertex_obs[index_access].append(index)
+                        vertex_obs[index].add(index_access)
+                        vertex_obs[index_access].add(index)
             assert index not in vertex_to_pin_layer
-            vertex_to_pin_layer[index] = layer
+            vertex_to_pin_layer[index] = (layer, access_type)
         term_access[term] = access
 
     progress.step("Access point setup", 1)
@@ -439,7 +486,6 @@ def run_routing(layout):
         for path in net_paths:
             for index in path:
                 blocked[index] = True
-                # vias obstruct all their neighbours on the adjacent layers
                 for obs in vertex_obs[index]:
                     blocked[obs] = True
         paths.append((net, net_paths))
@@ -543,8 +589,8 @@ def run_routing(layout):
     for net_name, term, index in terms_used:
         layer, x, y = vertex_pos[index]
         assert index in vertex_to_pin_layer
-        pin_layer = vertex_to_pin_layer[index]
-        for rect_layer, rect in grid.pin_access[pin_layer]:
+        pin_layer, access_type = vertex_to_pin_layer[index]
+        for rect_layer, rect in grid.pin_access[pin_layer][access_type]:
             routing_rects.append((net_name, rect_layer, rect.shifted(x, y)))
 
     layout.rects = routing_rects

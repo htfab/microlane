@@ -1,8 +1,5 @@
 DEFAULT_CONFIG = {
     # global
-    "pdk": "sky130",
-    "pdk_variant": "sky130A",
-    "std_cell_library": "sky130_fd_sc_hd",
     "template": "1x1",
     "show_progress": True,
     "project_name": None,
@@ -12,6 +9,7 @@ DEFAULT_CONFIG = {
     "debug.dump_synth_trees": False,
     "debug.skip_routing": False,
     "debug.verbose_routing": False,
+    "debug.skip_patching": False,
     "debug.air_wires_in_gds": False,
     "debug.blockages_in_gds": False,
     # bit blaster
@@ -30,6 +28,8 @@ DEFAULT_CONFIG = {
     # bufferer
     "synth.max_fanout": 10,
     # placement
+    "placement.use_endcap_cells": True,
+    "placement.use_tap_cells": True,
     "placement.random_seed": 0,
     "placement.init_temperature": 1000,
     "placement.cooling_factor": 0.9,
@@ -38,7 +38,7 @@ DEFAULT_CONFIG = {
     "placement.extra_space_y": 1,
     # routing
     "routing.wrong_direction_multiplier": 5,
-    "routing.layer_multiplier": {"met1": 1, "met2": 1, "met3": 2, "met4": 2},
+    "routing.layer_multiplier": {},
     "routing.via_penalty": 6800,  # equivalent wire length in nm
     "routing.access_penalty": (
         100000,
@@ -48,4 +48,5 @@ DEFAULT_CONFIG = {
     ),
     "routing.pdn_extra_blockage": 20,
     "routing.std_cell_extra_blockage": 0,
+    "routing.extra_distance": 0,
 }

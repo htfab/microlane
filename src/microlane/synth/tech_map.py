@@ -1,4 +1,4 @@
-from ..util.nodes import GateNode, NodeProcessor
+from ..util.nodes import ModuleNode, NodeProcessor
 
 
 class TechMapper(NodeProcessor):
@@ -16,44 +16,24 @@ class TechMapper(NodeProcessor):
 
     def process_module(self, node):
         # props: name, ports, symbols, nets, net_counter, inst_counter, gates, continuous_assignments, body
-        return self.pass_through(node)
+        assert node.body is None
+        self.nets = node.nets
+        self.gates = []
+        self.net_counter = node.net_counter
+        self.inst_counter = 0
 
-    def process_port(self, node):
-        # props: name, direction
-        return self.pass_through(node)
+        tech_map_inst = self.tech_map(self)
+        for gate in node.gates:
+            tech_map_inst.map_gate(gate.name, gate.terminals)
 
-    def process_symbol(self, node):
-        # props: name, signed, data_type, range
-        return self.pass_through(node)
-
-    def process_net(self, node):
-        # props: name
-        return self.pass_through(node)
-
-    def process_bit(self, node):
-        # props: value
-        return self.pass_through(node)
-
-    def process_gate(self, node):
-        # props: name, instance, terminals
-        if node.name not in self.tech_map:
-            raise RuntimeError(
-                f"No tech map found for gate {node.name} into standard cell library {self.std_cell_library}"
-            )
-        name, terminal_map = self.tech_map[node.name]
-        instance = node.instance
-        gate_terminals = set(node.terminals)
-        map_terminals = set(terminal_map.keys())
-        if gate_terminals - map_terminals != set():
-            raise RuntimeError(
-                f"Terminals {gate_terminals - map_terminals} of gate {node.name} missing in tech map for {self.std_cell_library}"
-            )
-        if map_terminals - gate_terminals != set():
-            raise RuntimeError(
-                f"Terminals {map_terminals - gate_terminals} of gate {node.node} missing in circuit but specified in tech map for {self.std_cell_library}"
-            )
-        assert gate_terminals == map_terminals
-        terminals = {}
-        for term in gate_terminals:
-            terminals[terminal_map[term]] = node.terminals[term]
-        return GateNode(name=name, instance=instance, terminals=terminals)
+        nn = ModuleNode(
+            name=node.name,
+            ports=node.ports,
+            symbols=node.symbols,
+            nets=self.nets,
+            gates=self.gates,
+            continuous_assignments=node.continuous_assignments,
+            net_counter=self.net_counter,
+            inst_counter=self.inst_counter,
+        )
+        return nn

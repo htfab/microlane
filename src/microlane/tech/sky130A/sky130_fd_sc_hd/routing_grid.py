@@ -12,8 +12,14 @@ ROUTING_GRID = {
     },
     "order": ["met1", "via1", "met2", "via2", "met3", "via3", "met4"],
     "pin_access": {
-        "li1": [("met1", 290, 230), ("mcon", 170, 170)],
-        "met1": [("met1", 140, 140)],
-        "met4": [("met4", 300, 300)],
+        "li1": {
+            "default": [("met1", 290, 230), ("mcon", 170, 170)],
+        },
+        "met1": {
+            "default": [("met1", 140, 140)],
+        },
+        "met4": {
+            "default": [("met4", 300, 300)],
+        },
     },
 }

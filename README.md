@@ -15,7 +15,7 @@ simulation.
 
 ### Limitations
 
-- Only the sky130 PDK is supported (with the high density standard cells).
+- Only the sky130 & ihp-sg13g2 PDKs are supported.
 - The floorplan is fixed to use a single 1x1 Tiny Tapeout tile.
 - The design has to fit in a single Verilog module.
 - There is only one clock domain. All synchronous logic has to use `posedge clk`.
@@ -39,6 +39,7 @@ simulation.
 You can try hardening the [demo design](tests/src/demo.v) with:
 ```
 pip install microlane
+export PDK=sky130A
 microlane demo.v
 ```
 
