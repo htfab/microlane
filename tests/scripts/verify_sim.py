@@ -34,6 +34,8 @@ if pdk == "sky130A":
     VDD = 1.8
 elif pdk == "ihp-sg13g2":
     VDD = 1.2
+elif pdk == "ihp-sg13cmos5l":
+    VDD = 1.2
 else:
     raise NotImplementedError("Unknown PDK")
 

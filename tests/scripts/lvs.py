@@ -21,6 +21,12 @@ elif pdk == "ihp-sg13g2":
         "VSS": "VGND",
     }
     stdcell_prefix = "sg13g2_"
+elif pdk == "ihp-sg13cmos5l":
+    power_map = {
+        "VDD": "VPWR",
+        "VSS": "VGND",
+    }
+    stdcell_prefix = "sg13cmos5l_"
 else:
     raise NotImplementedError("Unknown PDK")
 

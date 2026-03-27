@@ -15,6 +15,10 @@ cp $STEP_DIR/harden_cmdline/tt_um_microlane_demo.* $STEP_DIR/tt_precheck/
 cp $TEST_ROOT/scripts/info.yaml $STEP_DIR/tt_precheck/
 cd $STEP_DIR/tt_precheck
 cp tt_um_microlane_demo.pnl.v tt_um_microlane_demo.v
-git clone https://github.com/TinyTapeout/tt-support-tools tt
+if [ "$PDK" == "ihp-sg13cmos5l" ]; then
+    git clone https://github.com/TinyTapeout/tt-support-tools -b ihp-sg13cmos5l tt
+else
+    git clone https://github.com/TinyTapeout/tt-support-tools tt
+fi
 cd tt/precheck
 python precheck.py --tech $PDK --gds $STEP_DIR/tt_precheck/tt_um_microlane_demo.gds 2>&1 | tee $LOG_DIR/tt_precheck.log

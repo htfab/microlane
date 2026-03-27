@@ -12,7 +12,7 @@ rm -rf $STEP_DIR/cocotb_rtl $LOG_DIR/cocotb_rtl.log
 mkdir -p $STEP_DIR/cocotb_rtl
 mkdir -p $LOG_DIR
 cp $TEST_ROOT/src/demo.v $STEP_DIR/cocotb_rtl/
-cp $TEST_ROOT/scripts/cocotb/tb.v $STEP_DIR/cocotb_rtl/
+cp $TEST_ROOT/scripts/cocotb/tb.$PDK.v $STEP_DIR/cocotb_rtl/tb.v
 cp $TEST_ROOT/scripts/cocotb/test.py $STEP_DIR/cocotb_rtl/
 cp $TEST_ROOT/scripts/cocotb/rtl.mk $STEP_DIR/cocotb_rtl/Makefile
 cd $STEP_DIR/cocotb_rtl

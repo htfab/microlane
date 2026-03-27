@@ -1,0 +1,50 @@
+** analog simulation of extracted spice netlist
+
+** PDK path appropriate for iic-osic-tools docker image, change it if you have a different setup
+.lib $PDK_ROOT/ihp-sg13cmos5l/libs.tech/ngspice/models/cornerMOSlv.lib mos_tt
+
+** spice extracted from hardened project using magic's extract/ext2spice
+.include tt_um_microlane_demo.spice
+
+** instantiate the device under test
+Xdut VDD VSS ena clk rst_n
++ ui_in[0] ui_in[1] ui_in[2] ui_in[3] ui_in[4] ui_in[5] ui_in[6] ui_in[7]
++ uio_in[0] uio_in[1] uio_in[2] uio_in[3] uio_in[4] uio_in[5] uio_in[6] uio_in[7]
++ uo_out[0] uo_out[1] uo_out[2] uo_out[3] uo_out[4] uo_out[5] uo_out[6] uo_out[7]
++ uio_out[0] uio_out[1] uio_out[2] uio_out[3] uio_out[4] uio_out[5] uio_out[6] uio_out[7]
++ uio_oe[0] uio_oe[1] uio_oe[2] uio_oe[3] uio_oe[4] uio_oe[5] uio_oe[6] uio_oe[7]
++ tt_um_microlane_demo
+
+** generate input signals
+VVDD       VDD       GND  1.2
+VVSS       VSS       GND  0
+Vena       ena       GND  1.2
+Vclk       clk       GND  PULSE(1.2 0 4n 0 0  4n  8n 0)
+Vrst_n     rst_n     GND  PULSE(1.2 0 8n 0 0 40n 48n 1)
+Vui_in[0]  ui_in[0]  GND  0
+Vui_in[1]  ui_in[1]  GND  0
+Vui_in[2]  ui_in[2]  GND  0
+Vui_in[3]  ui_in[3]  GND  0
+Vui_in[4]  ui_in[4]  GND  0
+Vui_in[5]  ui_in[5]  GND  0
+Vui_in[6]  ui_in[6]  GND  0
+Vui_in[7]  ui_in[7]  GND  0
+Vuio_in[0] uio_in[0] GND  0
+Vuio_in[1] uio_in[1] GND  0
+Vuio_in[2] uio_in[2] GND  0
+Vuio_in[3] uio_in[3] GND  0
+Vuio_in[4] uio_in[4] GND  0
+Vuio_in[5] uio_in[5] GND  0
+Vuio_in[6] uio_in[6] GND  0
+Vuio_in[7] uio_in[7] GND  0
+
+** simulation setup
+.param temp=27
+.control
+  save clk rst_n uo_out[0] uo_out[1] uo_out[2] uo_out[3] uo_out[4] uo_out[5] uo_out[6] uo_out[7]
+  tran 200p 800n uic
+  write sim.raw
+  remzerovec
+.endc
+
+.end

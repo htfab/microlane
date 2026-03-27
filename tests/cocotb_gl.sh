@@ -9,6 +9,8 @@ if [ "$PDK" == "sky130A" ]; then
     export USE_PNL=1
 elif [ "$PDK" == "ihp-sg13g2" ]; then
     export USE_PNL=0
+elif [ "$PDK" == "ihp-sg13cmos5l" ]; then
+    export USE_PNL=0
 else
     echo "Unknown PDK" && exit 1
 fi
