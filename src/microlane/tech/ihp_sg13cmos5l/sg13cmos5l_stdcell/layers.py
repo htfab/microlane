@@ -10,9 +10,9 @@ LAYERS = {
     "Metal4_pin": (50, 2),
     "Metal4_text": (50, 25),
     # layers repurposed for debug overlays
-    "TopMetal1": (126, 0),
-    "Metal1_blockage": (8, 23),  # nofill
-    "Metal2_blockage": (10, 23),
-    "Metal3_blockage": (30, 23),
-    "Metal4_blockage": (50, 23),
+    "air_wire": (126, 0),  # TopMetal1
+    "Metal1.blockage": (8, 23),  # Metal1.nofill
+    "Metal2.blockage": (10, 23),  # Metal2.nofill
+    "Metal3.blockage": (30, 23),  # Metal3.nofill
+    "Metal4.blockage": (50, 23),  # Metal4.nofill
 }

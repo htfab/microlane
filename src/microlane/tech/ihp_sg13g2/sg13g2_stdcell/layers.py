@@ -16,11 +16,11 @@ LAYERS = {
     "TopMetal1_pin": (126, 2),
     "TopMetal1_text": (126, 25),
     # layers repurposed for debug overlays
-    "TopMetal2": (134, 0),
-    "Metal1_blockage": (8, 23),  # nofill
-    "Metal2_blockage": (10, 23),
-    "Metal3_blockage": (30, 23),
-    "Metal4_blockage": (50, 23),
-    "Metal5_blockage": (67, 23),
-    "TopMetal1_blockage": (126, 23),
+    "air_wire": (134, 0),  # TopMetal2
+    "Metal1.blockage": (8, 23),  # Metal1.nofill
+    "Metal2.blockage": (10, 23),  # Metal2.nofill
+    "Metal3.blockage": (30, 23),  # Metal3.nofill
+    "Metal4.blockage": (50, 23),  # Metal4.nofill
+    "Metal5.blockage": (67, 23),  # Metal5.nofill
+    "TopMetal1.blockage": (126, 23),  # TopMetal1.nofill
 }

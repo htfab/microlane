@@ -353,7 +353,9 @@ def run_placement(layout):
                 )
                 filler_width = max_size_up_to[free_width]
                 filler = fillers_by_size[filler_width]
-                add_special_cell(f"fill_{j}_{i}", filler, i, j, filler_width, "N")
+                add_special_cell(
+                    f"fill_{j}_{i}", filler, i, j, filler_width, flip=False
+                )
                 fill_sites += filler_width
     total_sites = gh * gw
     utilization = (total_sites - fill_sites) / total_sites

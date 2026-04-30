@@ -15,7 +15,7 @@ simulation.
 
 ### Limitations
 
-- Only the sky130, ihp-sg13g2 & ihp-sg13cmos5l PDKs are supported.
+- Supported PDKs: sky130A, gf180mcuD, ihp-sg13g2, ihp-sg13cmos5l.
 - The floorplan is fixed to use a single 1x1 Tiny Tapeout tile.
 - The design has to fit in a single Verilog module.
 - There is only one clock domain. All synchronous logic has to use `posedge clk`.

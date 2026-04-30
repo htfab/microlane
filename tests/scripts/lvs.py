@@ -15,6 +15,14 @@ if pdk == "sky130A":
         "VNB": "VGND",
     }
     stdcell_prefix = "sky130_fd_sc_hd__"
+elif pdk == "gf180mcuD":
+    power_map = {
+        "VDD": "VPWR",
+        "VNW": "VPWR",
+        "VPW": "VGND",
+        "VSS": "VGND",
+    }
+    stdcell_prefix = "gf180mcu_fd_sc_mcu7t5v0__"
 elif pdk == "ihp-sg13g2":
     power_map = {
         "VDD": "VPWR",

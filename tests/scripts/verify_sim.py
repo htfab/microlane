@@ -32,6 +32,8 @@ expected_output = [
 pdk = os.environ["PDK"]
 if pdk == "sky130A":
     VDD = 1.8
+elif pdk == "gf180mcuD":
+    VDD = 5.0
 elif pdk == "ihp-sg13g2":
     VDD = 1.2
 elif pdk == "ihp-sg13cmos5l":

@@ -12,10 +12,10 @@ LAYERS = {
     "met4_pin": (71, 16),
     "met4_label": (71, 5),
     # layers repurposed for debug overlays
-    "met5": (72, 20),
-    "li1_blockage": (67, 10),
-    "met1_blockage": (68, 10),
-    "met2_blockage": (69, 10),
-    "met3_blockage": (70, 10),
-    "met4_blockage": (71, 10),
+    "air_wire": (72, 20),  # met5
+    "li1.blockage": (67, 10),  # li1_blockage
+    "met1.blockage": (68, 10),  # met1_blockage
+    "met2.blockage": (69, 10),  # met2_blockage
+    "met3.blockage": (70, 10),  # met3_blockage
+    "met4.blockage": (71, 10),  # met4_blockage
 }

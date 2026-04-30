@@ -609,7 +609,7 @@ def run_routing(layout):
                 for rect in qt[layer].query_all_rects():
                     layout.floorplan.rects.append(
                         Array(
-                            layer=f"{layer}_blockage",
+                            layer=f"{layer}.blockage",
                             base_item=rect,
                             axis_refs=[],
                             label=None,
@@ -627,5 +627,5 @@ def run_routing(layout):
                 if target != source:
                     _, tx, ty = term_pos[target][0]
                     layout.air_wires.append(
-                        AirWire(layer="met5", edge=((sx, sy), (tx, ty)), width=10)
+                        AirWire(layer="air_wire", edge=((sx, sy), (tx, ty)), width=10)
                     )

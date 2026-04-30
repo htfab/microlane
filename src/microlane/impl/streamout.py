@@ -36,7 +36,6 @@ def gds_streamout(layout, gds):
                             flip=flip,
                             flop=flop,
                         )
-            gw.add_rect(*layers["pr_boundary"], (0, 0), layout.floorplan.die_size)
             for rect, layer, label, _ in layout.floorplan.resolve_rects():
                 gw.add_rect(*layers[layer], (rect.x1, rect.y1), (rect.x2, rect.y2))
             for point, layer, label, label_size in layout.floorplan.resolve_texts():
